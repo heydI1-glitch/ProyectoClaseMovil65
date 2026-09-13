@@ -10,7 +10,8 @@ import ScreenWrapper from "../components/ScreenWrapper";
 import SectionTitle from "../components/SectionTitle";
 import TagChip from "../components/TagChip";
 import { useTheme } from "../contexts/ThemeContext";
-import { useSkincare } from "../contexts/SkincareContext";
+// ❌ elimina esta línea:
+// import { useSkincare } from "../contexts/SkincareContext";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { TabsParamList } from "../navigation/TabsNavigator";
 import {
@@ -19,13 +20,21 @@ import {
   CATEGORY_LABELS,
 } from "../utils/types/Skincare";
 
+// ✅ importa Redux hooks y acciones
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addProduct } from "../store/slices/skincareSlice";
+
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, "Products">,
   NativeStackScreenProps<RootStackParamList>
 >;
 
 export default function Products({ navigation }: Props) {
-  const { products, addProduct } = useSkincare();
+  // ❌ antes: const { products, addProduct } = useSkincare();
+  // ✅ ahora:
+  const dispatch = useAppDispatch();
+  const products = useAppSelector((state) => state.skincare.products);
+
   const { colors } = useTheme();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -34,7 +43,8 @@ export default function Products({ navigation }: Props) {
 
   const handleAddProduct = () => {
     if (!name.trim() || !brand.trim()) return;
-    addProduct({ name: name.trim(), brand: brand.trim(), category });
+    // ✅ ahora se despacha la acción
+    dispatch(addProduct({ name: name.trim(), brand: brand.trim(), category }));
     setName("");
     setBrand("");
     setCategory("cleanser");
