@@ -5,9 +5,10 @@ import SectionTitle from "../components/SectionTitle";
 import StarRating from "../components/StarRating";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { useSkincare } from "../contexts/SkincareContext";
 import { i18n } from "../contexts/LanguageContext";
 import { CATEGORY_LABELS } from "../utils/types/Skincare";
+
+// ✅ Importa Redux hook
 import { useAppSelector } from "../store/hooks";
 
 type RoutinePreviewProps = {
@@ -17,7 +18,7 @@ type RoutinePreviewProps = {
 };
 
 function RoutinePreview({ title, icon, productIds }: RoutinePreviewProps) {
-  const { products } = useSkincare();
+  const products = useAppSelector((state) => state.skincare.products);
   const { colors } = useTheme();
 
   const routineProducts = productIds
@@ -25,14 +26,10 @@ function RoutinePreview({ title, icon, productIds }: RoutinePreviewProps) {
     .filter(Boolean);
 
   return (
-    <View
-      style={[styles.routineCard, { backgroundColor: colors.inputBackground }]}
-    >
+    <View style={[styles.routineCard, { backgroundColor: colors.inputBackground }]}>
       <View style={styles.routineHeader}>
         <Ionicons name={icon} size={20} color={colors.secondary} />
-        <Text style={[styles.routineTitle, { color: colors.primary }]}>
-          {title}
-        </Text>
+        <Text style={[styles.routineTitle, { color: colors.primary }]}>{title}</Text>
       </View>
       {routineProducts.length === 0 ? (
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
@@ -41,13 +38,9 @@ function RoutinePreview({ title, icon, productIds }: RoutinePreviewProps) {
       ) : (
         routineProducts.map((product, index) => (
           <View key={product!.id} style={styles.stepRow}>
-            <Text style={[styles.stepNum, { color: colors.secondary }]}>
-              {index + 1}.
-            </Text>
+            <Text style={[styles.stepNum, { color: colors.secondary }]}>{index + 1}.</Text>
             <View style={styles.stepContent}>
-              <Text
-                style={[styles.stepName, { color: colors.buttonTertiaryText }]}
-              >
+              <Text style={[styles.stepName, { color: colors.buttonTertiaryText }]}>
                 {product!.name}
               </Text>
               <Text style={[styles.stepCat, { color: colors.textSecondary }]}>
@@ -65,14 +58,14 @@ function RoutinePreview({ title, icon, productIds }: RoutinePreviewProps) {
 }
 
 export default function Home() {
-  const { products } = useSkincare();
+  const products = useAppSelector((state) => state.skincare.products);
   const profile = useAppSelector((state) => state.userProfile);
   const { user } = useAuth();
   const { colors } = useTheme();
 
   const reviewedCount = products.filter((p) => p.review).length;
 
-  // Al conectar Redux en Routines, estas listas pueden leerse del store.
+  // Rutina temporal (puedes migrarla a Redux si quieres persistencia global)
   const routine = { morning: [] as string[], night: [] as string[] };
 
   return (
@@ -85,51 +78,27 @@ export default function Home() {
       </Text>
 
       <View style={styles.statsRow}>
-        <View
-          style={[styles.stat, { backgroundColor: colors.inputBackground }]}
-        >
-          <Text style={[styles.statNum, { color: colors.secondary }]}>
-            {products.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Productos
-          </Text>
+        <View style={[styles.stat, { backgroundColor: colors.inputBackground }]}>
+          <Text style={[styles.statNum, { color: colors.secondary }]}>{products.length}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Productos</Text>
         </View>
-        <View
-          style={[styles.stat, { backgroundColor: colors.inputBackground }]}
-        >
+        <View style={[styles.stat, { backgroundColor: colors.inputBackground }]}>
           <Text style={[styles.statNum, { color: colors.secondary }]}>
             {routine.morning.length + routine.night.length}
           </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Pasos rutina
-          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pasos rutina</Text>
         </View>
-        <View
-          style={[styles.stat, { backgroundColor: colors.inputBackground }]}
-        >
-          <Text style={[styles.statNum, { color: colors.secondary }]}>
-            {reviewedCount}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Reseñas
-          </Text>
+        <View style={[styles.stat, { backgroundColor: colors.inputBackground }]}>
+          <Text style={[styles.statNum, { color: colors.secondary }]}>{reviewedCount}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Reseñas</Text>
         </View>
       </View>
 
       <SectionTitle title="Rutina de Mañana" />
-      <RoutinePreview
-        title="Mañana"
-        icon="sunny-outline"
-        productIds={routine.morning}
-      />
+      <RoutinePreview title="Mañana" icon="sunny-outline" productIds={routine.morning} />
 
       <SectionTitle title="Rutina de Noche" />
-      <RoutinePreview
-        title="Noche"
-        icon="moon-outline"
-        productIds={routine.night}
-      />
+      <RoutinePreview title="Noche" icon="moon-outline" productIds={routine.night} />
     </ScreenWrapper>
   );
 }
