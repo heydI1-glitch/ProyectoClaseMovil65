@@ -8,33 +8,37 @@ import SectionTitle from "../components/SectionTitle";
 import StarRating from "../components/StarRating";
 import TagChip from "../components/TagChip";
 import { useTheme } from "../contexts/ThemeContext";
-import { useSkincare } from "../contexts/SkincareContext";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { CATEGORY_LABELS, UsageTimeUnit } from "../utils/types/Skincare";
+
+// ✅ Importa Redux hooks y acciones
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addReview, deleteProduct } from "../store/slices/skincareSlice";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetail">;
 
 export default function ProductDetail({ route, navigation }: Props) {
-  const { products, addReview, deleteProduct } = useSkincare();
+  const dispatch = useAppDispatch();
+  const products = useAppSelector((state) => state.skincare.products);
+
   const { productId } = route.params;
   const { colors } = useTheme();
+
   const product = products.find((p) => p.id === productId);
 
   const [rating, setRating] = useState(product?.review?.rating ?? 0);
   const [comment, setComment] = useState(product?.review?.comment ?? "");
   const [usageDuration, setUsageDuration] = useState(
-    product?.review?.usageDuration?.toString() ?? "",
+    product?.review?.usageDuration?.toString() ?? ""
   );
   const [usageUnit, setUsageUnit] = useState<UsageTimeUnit>(
-    product?.review?.usageUnit ?? "weeks",
+    product?.review?.usageUnit ?? "weeks"
   );
 
   if (!product) {
     return (
       <ScreenWrapper>
-        <Text style={{ color: colors.textSecondary }}>
-          Producto no encontrado
-        </Text>
+        <Text style={{ color: colors.textSecondary }}>Producto no encontrado</Text>
         <CustomButton
           title="Volver"
           onPress={() => navigation.goBack()}
@@ -46,25 +50,28 @@ export default function ProductDetail({ route, navigation }: Props) {
 
   const handleSaveReview = () => {
     if (rating === 0 || !usageDuration.trim()) return;
-    addReview(productId, {
-      rating,
-      comment: comment.trim(),
-      usageDuration: parseInt(usageDuration, 10),
-      usageUnit,
-    });
+    dispatch(
+      addReview({
+        productId,
+        review: {
+          rating,
+          comment: comment.trim(),
+          usageDuration: parseInt(usageDuration, 10),
+          usageUnit,
+        },
+      })
+    );
     navigation.goBack();
   };
 
   const handleDelete = () => {
-    deleteProduct(productId);
+    dispatch(deleteProduct(productId));
     navigation.goBack();
   };
 
   return (
     <ScreenWrapper>
-      <View
-        style={[styles.header, { backgroundColor: colors.inputBackground }]}
-      >
+      <View style={[styles.header, { backgroundColor: colors.inputBackground }]}>
         <Text style={[styles.name, { color: colors.buttonTertiaryText }]}>
           {product.name}
         </Text>
@@ -90,9 +97,7 @@ export default function ProductDetail({ route, navigation }: Props) {
         onChangeText={setComment}
       />
 
-      <Text style={[styles.label, { color: colors.primary }]}>
-        Tiempo de uso
-      </Text>
+      <Text style={[styles.label, { color: colors.primary }]}>Tiempo de uso</Text>
       <CustomInput
         placeholder="Cantidad (ej: 3)"
         value={usageDuration}
@@ -114,9 +119,7 @@ export default function ProductDetail({ route, navigation }: Props) {
       </View>
 
       {product.review && (
-        <View
-          style={[styles.existingReview, { borderColor: colors.secondary }]}
-        >
+        <View style={[styles.existingReview, { borderColor: colors.secondary }]}>
           <Text style={[styles.existingLabel, { color: colors.textSecondary }]}>
             Reseña actual
           </Text>
