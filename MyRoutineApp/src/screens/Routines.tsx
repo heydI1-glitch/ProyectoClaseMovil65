@@ -4,8 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import ScreenWrapper from "../components/ScreenWrapper";
 import SectionTitle from "../components/SectionTitle";
 import { useTheme } from "../contexts/ThemeContext";
-import { useSkincare } from "../contexts/SkincareContext";
 import { CATEGORY_LABELS, Routine } from "../utils/types/Skincare";
+
+// ✅ Importa Redux hook
+import { useAppSelector } from "../store/hooks";
 
 type RoutineSectionProps = {
   title: string;
@@ -24,7 +26,7 @@ function RoutineSection({
   onAdd,
   onRemove,
 }: RoutineSectionProps) {
-  const { products } = useSkincare();
+  const products = useAppSelector((state) => state.skincare.products);
   const { colors } = useTheme();
 
   const routineProducts = productIds
@@ -113,22 +115,17 @@ function RoutineSection({
 }
 
 export default function Routines() {
-  const { products } = useSkincare();
+  const products = useAppSelector((state) => state.skincare.products);
   const { colors } = useTheme();
 
-  // EJERCICIO: reemplaza este estado local por Redux
-  // (createSlice + useAppSelector / useAppDispatch).
-  // Acciones esperadas: addToRoutine y removeFromRoutine.
-  // Así la rutina también podrá verse en la pantalla Inicio.
+  // Por ahora mantienes el estado local de rutina,
+  // luego puedes migrarlo a Redux si quieres persistencia global.
   const [routine, setRoutine] = useState<Routine>({
     morning: [],
     night: [],
   });
 
-  const handleAddToRoutine = (
-    type: "morning" | "night",
-    productId: string,
-  ) => {
+  const handleAddToRoutine = (type: "morning" | "night", productId: string) => {
     setRoutine((prev) => {
       if (prev[type].includes(productId)) return prev;
       return { ...prev, [type]: [...prev[type], productId] };
@@ -137,7 +134,7 @@ export default function Routines() {
 
   const handleRemoveFromRoutine = (
     type: "morning" | "night",
-    productId: string,
+    productId: string
   ) => {
     setRoutine((prev) => ({
       ...prev,
